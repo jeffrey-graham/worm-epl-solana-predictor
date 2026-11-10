@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Worm.wtf Premier League Prediction &amp; 3× Leverage Terminal | Solana</title>
+  <meta name="description" content="Quantitative Premier League Prediction Market & 1x-3x Leverage Terminal for Worm.wtf on Solana. Compare Dixon-Coles club probabilities against live Market Probabilities (%), simulate margin buffers, and track weekly $1,500 USDC Top-10 Trader rewards." />
+  <style>
+    :root {
+      --bg: #080b13;
+      --bg-elev: #101625;
+      --bg-card: #131b2e;
+      --border: #243252;
+      --sol-green: #14f195;
+      --worm-purple: #9945ff;
+      --cyan: #38bdf8;
+      --amber: #fbbf24;
+      --danger: #f43f5e;
+      --text: #f3f7ff;
+      --muted: #98a8c7;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background: radial-gradient(circle at 15% 0%, rgba(153, 69, 255, 0.14), transparent 38%),
+                  radial-gradient(circle at 85% 5%, rgba(20, 241, 149, 0.12), transparent 38%),
+                  var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    .container { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+
+    /* Sticky Topbar */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(14px);
+      background: rgba(8, 11, 19, 0.86);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 1.08rem;
+      letter-spacing: -0.01em;
+    }
+    .brand-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--sol-green);
+      box-shadow: 0 0 12px var(--sol-green);
+    }
+    .badge-pill {
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(20, 241, 149, 0.12);
+      border: 1px solid rgba(20, 241, 149, 0.4);
+      color: var(--sol-green);
+      font-weight: 700;
+    }
+    .nav-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 11px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      cursor: pointer;
+      border: none;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--sol-green), #0fd182);
+      color: #06110c;
+      box-shadow: 0 6px 24px rgba(20, 241, 149, 0.25);
+    }
+    .btn-secondary {
+      background: rgba(153, 69, 255, 0.16);
+      color: #e9d8ff;
+      border: 1px solid rgba(153, 69, 255, 0.55);
+    }
+
+    /* Hero */
+    .hero { padding: 56px 0 36px; }
+    .hero-eyebrow {
+      display: inline-block;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.82rem;
+      color: var(--sol-green);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+    .hero h1 {
+      font-size: clamp(2.1rem, 4.2vw, 3.35rem);
+      line-height: 1.12;
+      font-weight: 850;
+      letter-spacing: -0.025em;
+      max-width: 920px;
+      margin-bottom: 16px;
+    }
+    .hero h1 span {
+      background: linear-gradient(90deg, var(--sol-green), var(--cyan), var(--worm-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      color: var(--muted);
+      font-size: 1.08rem;
+      max-width: 790px;
+      margin-bottom: 26px;
+    }
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 28px;
+    }
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+    }
+    .kpi-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+    .kpi-val {
+      font-size: 1.65rem;
+      font-weight: 800;
+      margin: 4px 0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .kpi-sub { font-size: 0.84rem; color: var(--muted); }
+
+    /* Grid Sections */
+    .section { padding: 28px 0; }
+    .section-header { margin-bottom: 20px; }
+    .section-header h2 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.015em; }
+    .section-header p { color: var(--muted); font-size: 0.96rem; margin-top: 4px; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 22px;
+    }
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .panel h3 {
+      font-size: 1.15rem;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.84rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    select, input[type="number"] {
+      width: 100%;
+      background: var(--bg-elev);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      margin-bottom: 14px;
+    }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--sol-green);
+      margin-bottom: 14px;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    /* Probability Bars */
+    .prob-row { margin-bottom: 14px; }
+    .prob-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    .prob-track {
+      height: 12px;
+      background: var(--bg-elev);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .prob-fill { height: 100%; border-radius: 999px; transition: width 0.25s ease; }
+
+    .score-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .score-pill {
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 6px 11px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.83rem;
+    }
+
+    .signal-box {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: rgba(20, 241, 149, 0.09);
+      border: 1px solid rgba(20, 241, 149, 0.35);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* Leverage Toggle Pills */
+    .pill-group { display: flex; gap: 8px; margin-bottom: 14px; }
+    .pill-btn {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 9px;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.86rem;
+    }
+    .pill-btn.active {
+      background: rgba(153, 69, 255, 0.22);
+      border-color: var(--worm-purple);
+      color: var(--text);
+    }
+
+    .sim-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .sim-stat {
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    .sim-stat .k { font-size: 0.76rem; color: var(--muted); text-transform: uppercase; }
+    .sim-stat .v {
+      font-size: 1.25rem;
+      font-weight: 800;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      margin-top: 3px;
+    }
+
+    /* Video & Gallery */
+    .video-frame {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    video {
+      width: 100%;
+      border-radius: 12px;
+      display: block;
+      background: #000;
+    }
+    .shot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+      gap: 18px;
+    }
+    .shot-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .shot-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-bottom: 1px solid var(--border);
+    }
+    .shot-caption {
+      padding: 14px 16px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .shot-caption strong { color: var(--text); display: block; margin-bottom: 3px; }
+
+    footer {
+      margin-top: 48px;
+      border-top: 1px solid var(--border);
+      padding: 32px 0 48px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav-row">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <span>Worm.wtf EPL Prediction Terminal</span>
+        <span class="badge-pill">SOLANA • 1×–3× LEVERAGE</span>
+      </div>
+      <div class="nav-actions">
+        <a class="btn btn-secondary" href="https://www.worm.wtf/sports?league=eng.1" target="_blank" rel="noopener">
+          Live EPL Markets (%)
+        </a>
+        <a class="btn btn-primary" href="https://www.worm.wtf/r/bLytY0" target="_blank" rel="noopener">
+          Predict on Worm.wtf &rarr;
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <span class="hero-eyebrow">On-Chain Premier League Prediction Market Analytics</span>
+      <h1>Predict Every Premier League Match with <span>Live % Probabilities &amp; Up to 3× Leverage</span></h1>
+      <p>
+        Built for analytical Solana Traders on <strong>Worm.wtf</strong>. Compare Dixon-Coles expected-goal probabilities across all 20 EPL clubs against live Market Probabilities (<code>%</code>), stress-test <code>1×–3×</code> leveraged positions with transparent margin buffers, and compete for weekly <strong>$1,500 USDC Top-10 Leaderboard</strong> prizes.
+      </p>
+      <div class="nav-actions">
+        <a class="btn btn-primary" href="https://www.worm.wtf/r/bLytY0" target="_blank" rel="noopener">
+          Launch Worm.wtf via Referral (bLytY0) &rarr;
+        </a>
+        <a class="btn btn-secondary" href="https://www.worm.wtf/sports?league=eng.1" target="_blank" rel="noopener">
+          Explore Premier League Markets
+        </a>
+      </div>
+
+      <div class="kpi-strip">
+        <div class="kpi-card">
+          <div class="kpi-label">EPL Coverage</div>
+          <div class="kpi-val" style="color: var(--sol-green);">20 Clubs</div>
+          <div class="kpi-sub">Matchweek &amp; Season Champion Markets</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Position Multiplier</div>
+          <div class="kpi-val" style="color: var(--worm-purple);">1× – 3×</div>
+          <div class="kpi-sub">Spot (No Liquidation) or Leveraged Alpha</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Weekly Leaderboard</div>
+          <div class="kpi-val" style="color: var(--amber);">$1,500 USDC</div>
+          <div class="kpi-sub">Distributed Every Matchweek to Top 10 Traders</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Creator &amp; Trader Referral</div>
+          <div class="kpi-val" style="color: var(--cyan);">30% USDC</div>
+          <div class="kpi-sub">90-Day Fee Share via worm.wtf/r/bLytY0</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Simulator Grid -->
+    <section class="section">
+      <div class="section-header">
+        <h2>Interactive Matchup Predictor &amp; 3× Leverage Simulator</h2>
+        <p>Select any Premier League fixture to compute Dixon-Coles probabilities and simulate 1×–3× position PnL on Worm.wtf.</p>
+      </div>
+
+      <div class="grid-2">
+        <!-- Panel 1: 20-Club EPL Matchup Engine -->
+        <div class="panel">
+          <h3>
+            <span>1. Dixon-Coles EPL Match Probability Engine</span>
+            <span class="badge-pill">20 EPL Clubs</span>
+          </h3>
+          <div class="form-row">
+            <div>
+              <label for="homeClub">Home Club</label>
+              <select id="homeClub"></select>
+            </div>
+            <div>
+              <label for="awayClub">Away Club</label>
+              <select id="awayClub"></select>
+            </div>
+          </div>
+
+          <label for="wormHomeMarket">
+            Live Worm.wtf Home "YES" Market Probability: <strong id="wormHomeMarketVal" style="color: var(--sol-green);">46%</strong>
+          </label>
+          <input type="range" id="wormHomeMarket" min="5" max="92" step="1" value="46" />
+
+          <div class="prob-row">
+            <div class="prob-meta">
+              <span id="homeLabel">Home Win Probability</span>
+              <span id="homeProbText" style="color: var(--sol-green);">--%</span>
+            </div>
+            <div class="prob-track"><div id="homeProbBar" class="prob-fill" style="background: var(--sol-green); width: 50%;"></div></div>
+          </div>
+
+          <div class="prob-row">
+            <div class="prob-meta">
+              <span>Draw Market Probability</span>
+              <span id="drawProbText" style="color: var(--cyan);">--%</span>
+            </div>
+            <div class="prob-track"><div id="drawProbBar" class="prob-fill" style="background: var(--cyan); width: 25%;"></div></div>
+          </div>
+
+          <div class="prob-row">
+            <div class="prob-meta">
+              <span id="awayLabel">Away Win Probability</span>
+              <span id="awayProbText" style="color: var(--worm-purple);">--%</span>
+            </div>
+            <div class="prob-track"><div id="awayProbBar" class="prob-fill" style="background: var(--worm-purple); width: 25%;"></div></div>
+          </div>
+
+          <div style="margin-top: 12px; font-size: 0.85rem; color: var(--muted);">
+            Expected Goals (<code id="xgSummary">xG: -- vs --</code>) • Most Likely Scorelines:
+          </div>
+          <div id="scorelineList" class="score-pills"></div>
+
+          <div class="signal-box">
+            <div>
+              <div style="font-size: 0.76rem; color: var(--muted); text-transform: uppercase;">Quantitative Trader Signal</div>
+              <div id="edgeSignalText" style="font-weight: 800; font-size: 1.02rem; color: var(--sol-green);">--</div>
+            </div>
+            <a class="btn btn-primary" style="padding: 8px 14px; font-size: 0.85rem;" href="https://www.worm.wtf/r/bLytY0" target="_blank" rel="noopener">
+              Predict Match &rarr;
+            </a>
+          </div>
+        </div>
+
+        <!-- Panel 2: 1x-3x Leverage Simulator -->
+        <div class="panel">
+          <h3>
+            <span>2. 1×–3× Leveraged Position &amp; Buffer Simulator</span>
+            <span class="badge-pill" style="border-color: var(--worm-purple); color: #d8b4fe; background: rgba(153,69,255,0.15);">MARGIN HUD</span>
+          </h3>
+
+          <div class="pill-group">
+            <button type="button" class="pill-btn active" data-side="YES" id="sideYesBtn">Predict YES</button>
+            <button type="button" class="pill-btn" data-side="NO" id="sideNoBtn">Predict NO</button>
+          </div>
+
+          <div class="form-row">
+            <div>
+              <label for="collateralInput">Collateral (USDC)</label>
+              <input type="number" id="collateralInput" value="500" min="10" max="100000" step="50" />
+            </div>
+            <div>
+              <label>Quick Leverage Presets</label>
+              <div class="pill-group" style="margin-bottom: 0;">
+                <button type="button" class="pill-btn lev-preset" data-lev="1.0">1× Spot</button>
+                <button type="button" class="pill-btn lev-preset active" data-lev="2.0">2×</button>
+                <button type="button" class="pill-btn lev-preset" data-lev="3.0">3× Max</button>
+              </div>
+            </div>
+          </div>
+
+          <label for="leverageSlider">
+            Position Leverage: <strong id="leverageVal" style="color: var(--worm-purple);">2.0×</strong>
+          </label>
+          <input type="range" id="leverageSlider" min="1.0" max="3.0" step="0.1" value="2.0" />
+
+          <div class="form-row">
+            <div>
+              <label for="entryProbSlider">Entry Market %: <strong id="entryProbVal">46%</strong></label>
+              <input type="range" id="entryProbSlider" min="5" max="95" step="1" value="46" />
+            </div>
+            <div>
+              <label for="exitProbSlider">Target / Exit %: <strong id="exitProbVal">64%</strong></label>
+              <input type="range" id="exitProbSlider" min="1" max="99" step="1" value="64" />
+            </div>
+          </div>
+
+          <div class="sim-metrics">
+            <div class="sim-stat">
+              <div class="k">Notional Exposure</div>
+              <div class="v" id="simNotional">$1,000 USDC</div>
+            </div>
+            <div class="sim-stat">
+              <div class="k">Projected Net PnL</div>
+              <div class="v" id="simPnl" style="color: var(--sol-green);">+$389.30</div>
+            </div>
+            <div class="sim-stat">
+              <div class="k">Liquidation Market %</div>
+              <div class="v" id="simLiqPrice">26.7%</div>
+            </div>
+            <div class="sim-stat">
+              <div class="k">Probability Safety Buffer</div>
+              <div class="v" id="simBuffer" style="color: var(--cyan);">19.3 pts</div>
+            </div>
+          </div>
+
+          <div id="simStatusBanner" style="margin-top: 14px; font-size: 0.86rem; color: var(--muted);"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Leaderboard & Referral Calculator -->
+    <section class="section">
+      <div class="panel">
+        <h3>
+          <span>3. Weekly $1,500 USDC Top-10 Leaderboard &amp; 90-Day 30% Referral Calculator</span>
+          <span class="badge-pill">REWARDS ENGINE</span>
+        </h3>
+        <div class="grid-2" style="align-items: center;">
+          <div>
+            <div class="form-row">
+              <div>
+                <label for="weeklyVolInput">Your Weekly EPL Volume (USDC)</label>
+                <input type="number" id="weeklyVolInput" value="3500" min="100" step="250" />
+              </div>
+              <div>
+                <label for="referredTradersInput">Referred EPL Traders (30% Share)</label>
+                <input type="number" id="referredTradersInput" value="25" min="0" step="5" />
+              </div>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--muted);">
+              Every Matchweek, Worm.wtf distributes <strong>$1,500 USDC</strong> across the Top 10 Premier League Traders (<code>#1: $450</code>, <code>#2: $300</code>, <code>#3: $200</code>, <code>#4–#10: $550</code>). Plus, earn <strong>30% of trading fees in USDC for 90 days</strong> on Traders joining via your referral link.
+            </p>
+          </div>
+          <div class="sim-metrics" style="margin-top: 0;">
+            <div class="sim-stat">
+              <div class="k">Top-10 Finish Probability</div>
+              <div class="v" id="lbProbVal" style="color: var(--amber);">21.4%</div>
+            </div>
+            <div class="sim-stat">
+              <div class="k">Expected Weekly Prize EV</div>
+              <div class="v" id="lbBonusVal" style="color: var(--sol-green);">+$38.50 USDC</div>
+            </div>
+            <div class="sim-stat">
+              <div class="k">90-Day Referred Notional</div>
+              <div class="v" id="refVolVal">$848.5K</div>
+            </div>
+            <div class="sim-stat">
+              <div class="k">90-Day 30% Referral Payout</div>
+              <div class="v" id="refPayoutVal" style="color: var(--cyan);">+$636.43 USDC</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 60s Video Walkthrough -->
+    <section class="section">
+      <div class="section-header">
+        <h2>60-Second Premier League Prediction &amp; Leverage Walkthrough</h2>
+        <p>Watch how Solana Traders analyze live Premier League Market Probabilities (%) and execute 1×–3× positions on Worm.wtf.</p>
+      </div>
+      <div class="video-frame">
+        <video controls preload="metadata" poster="assets/worm_epl_champion_odds_live.png">
+          <source src="assets/worm_epl_prediction_walkthrough.mp4" type="video/mp4" />
+          Your browser does not support HTML5 video playback.
+        </video>
+      </div>
+    </section>
+
+    <!-- Live Worm.wtf Screenshots -->
+    <section class="section">
+      <div class="section-header">
+        <h2>Live Worm.wtf Premier League &amp; Leverage Interface</h2>
+        <p>Verified live market captures from <a href="https://www.worm.wtf/sports?league=eng.1" target="_blank" rel="noopener" style="color: var(--sol-green); text-decoration: underline;">worm.wtf/sports?league=eng.1</a>.</p>
+      </div>
+      <div class="shot-grid">
+        <div class="shot-card">
+          <img src="assets/worm_epl_markets_live.png" alt="Worm.wtf Live Premier League Prediction Markets" />
+          <div class="shot-caption">
+            <strong>Premier League Prediction Hub</strong>
+            Clean 0%–100% Market Probabilities across season-long &amp; upcoming EPL markets with direct leaderboard access.
+          </div>
+        </div>
+        <div class="shot-card">
+          <img src="assets/worm_epl_champion_odds_live.png" alt="Worm.wtf EPL Champion Market Probabilities and Leverage Ticket" />
+          <div class="shot-caption">
+            <strong>Live Probability Curves &amp; Order Ticket</strong>
+            Real-time Arsenal (77%), Brighton (7.1%), Man City (7%), and Liverpool (6.1%) markets with Yes/No execution &amp; Leverage slider.
+          </div>
+        </div>
+        <div class="shot-card">
+          <img src="assets/worm_leverage_markets_live.png" alt="Worm.wtf Dedicated Leverage Prediction Markets" />
+          <div class="shot-caption">
+            <strong>Dedicated Leverage Markets Hub</strong>
+            Capital-efficient prediction markets on Solana enabling conviction Traders to scale exposure up to 3×.
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <strong style="color: var(--text);">Worm.wtf Premier League Prediction Terminal</strong> • Quantitative Dixon-Coles &amp; 3× Leverage Analytics on Solana.<br />
+        Strictly analytical Prediction Market tooling for Traders. Follow <a href="https://x.com/wormwtf" target="_blank" rel="noopener" style="color: var(--sol-green);">@wormwtf</a>.
+      </div>
+      <a class="btn btn-primary" href="https://www.worm.wtf/r/bLytY0" target="_blank" rel="noopener">
+        Start Predicting: worm.wtf/r/bLytY0 &rarr;
+      </a>
+    </div>
+  </footer>
+
+  <script>
+    const EPL_CLUBS = [
+      { code: "ARS", name: "Arsenal", atk: 1.54, def: 0.66, titlePct: 77.0 },
+      { code: "MCI", name: "Manchester City", atk: 1.49, def: 0.78, titlePct: 7.0 },
+      { code: "LIV", name: "Liverpool", atk: 1.47, def: 0.75, titlePct: 6.1 },
+      { code: "BHA", name: "Brighton & Hove Albion", atk: 1.24, def: 0.92, titlePct: 7.1 },
+      { code: "CHE", name: "Chelsea", atk: 1.33, def: 0.89, titlePct: 1.8 },
+      { code: "AVL", name: "Aston Villa", atk: 1.26, def: 0.94, titlePct: 1.0 },
+      { code: "TOT", name: "Tottenham Hotspur", atk: 1.31, def: 0.98, titlePct: 0.8 },
+      { code: "NEW", name: "Newcastle United", atk: 1.25, def: 0.91, titlePct: 0.6 },
+      { code: "MUN", name: "Manchester United", atk: 1.14, def: 1.01, titlePct: 0.4 },
+      { code: "FUL", name: "Fulham", atk: 1.08, def: 1.00, titlePct: 0.25 },
+      { code: "BRE", name: "Brentford", atk: 1.11, def: 1.06, titlePct: 0.2 },
+      { code: "BOU", name: "AFC Bournemouth", atk: 1.09, def: 1.05, titlePct: 0.2 },
+      { code: "NFO", name: "Nottingham Forest", atk: 1.07, def: 0.97, titlePct: 0.2 },
+      { code: "WHU", name: "West Ham United", atk: 1.04, def: 1.12, titlePct: 0.15 },
+      { code: "CRY", name: "Crystal Palace", atk: 1.01, def: 1.04, titlePct: 0.15 },
+      { code: "EVE", name: "Everton", atk: 0.91, def: 1.07, titlePct: 0.1 },
+      { code: "WOL", name: "Wolverhampton Wanderers", atk: 0.95, def: 1.16, titlePct: 0.1 },
+      { code: "LEI", name: "Leicester City", atk: 0.89, def: 1.24, titlePct: 0.08 },
+      { code: "IPS", name: "Ipswich Town", atk: 0.84, def: 1.29, titlePct: 0.05 },
+      { code: "SOU", name: "Southampton", atk: 0.80, def: 1.34, titlePct: 0.04 }
+    ];
+
+    function factorial(n) {
+      let r = 1;
+      for (let i = 2; i <= n; i++) r *= i;
+      return r;
+    }
+    function poissonPmf(k, lam) {
+      return Math.exp(-lam) * Math.pow(lam, k) / factorial(k);
+    }
+    function dixonColesTau(hg, ag, lh, la, rho) {
+      if (hg === 0 && ag === 0) return Math.max(0, 1 - lh * la * rho);
+      if (hg === 0 && ag === 1) return Math.max(0, 1 + lh * rho);
+      if (hg === 1 && ag === 0) return Math.max(0, 1 + la * rho);
+      if (hg === 1 && ag === 1) return Math.max(0, 1 - rho);
+      return 1.0;
+    }
+
+    const homeSel = document.getElementById("homeClub");
+    const awaySel = document.getElementById("awayClub");
+    EPL_CLUBS.forEach((c, idx) => {
+      homeSel.add(new Option(`${c.name} (${c.code})`, c.code, idx === 0, idx === 0));
+      awaySel.add(new Option(`${c.name} (${c.code})`, c.code, idx === 1, idx === 1));
+    });
+
+    function updateMatchEngine() {
+      let hCode = homeSel.value;
+      let aCode = awaySel.value;
+      if (hCode === aCode) {
+        aCode = EPL_CLUBS.find(c => c.code !== hCode).code;
+        awaySel.value = aCode;
+      }
+      const home = EPL_CLUBS.find(c => c.code === hCode);
+      const away = EPL_CLUBS.find(c => c.code === aCode);
+      const marketHome = parseFloat(document.getElementById("wormHomeMarket").value);
+      document.getElementById("wormHomeMarketVal").textContent = `${marketHome}%`;
+
+      const lh = 1.38 * 1.14 * home.atk * away.def;
+      const la = 1.38 * away.atk * home.def;
+      const rho = -0.09;
+
+      let total = 0;
+      const grid = [];
+      for (let hg = 0; hg <= 9; hg++) {
+        grid[hg] = [];
+        const ph = poissonPmf(hg, lh);
+        for (let ag = 0; ag <= 9; ag++) {
+          const p = ph * poissonPmf(ag, la) * dixonColesTau(hg, ag, lh, la, rho);
+          grid[hg][ag] = p;
+          total += p;
+        }
+      }
+
+      let pHome = 0, pDraw = 0, pAway = 0;
+      const scores = [];
+      for (let hg = 0; hg <= 9; hg++) {
+        for (let ag = 0; ag <= 9; ag++) {
+          const np = grid[hg][ag] / total;
+          if (hg > ag) pHome += np;
+          else if (hg === ag) pDraw += np;
+          else pAway += np;
+          scores.push({ label: `${hg}–${ag}`, pct: (np * 100).toFixed(1) });
+        }
+      }
+      scores.sort((a, b) => parseFloat(b.pct) - parseFloat(a.pct));
+
+      const hPct = (pHome * 100).toFixed(1);
+      const dPct = (pDraw * 100).toFixed(1);
+      const aPct = (pAway * 100).toFixed(1);
+
+      document.getElementById("homeLabel").textContent = `${home.name} Win (Model)`;
+      document.getElementById("awayLabel").textContent = `${away.name} Win (Model)`;
+      document.getElementById("homeProbText").textContent = `${hPct}%`;
+      document.getElementById("drawProbText").textContent = `${dPct}%`;
+      document.getElementById("awayProbText").textContent = `${aPct}%`;
+
+      document.getElementById("homeProbBar").style.width = `${hPct}%`;
+      document.getElementById("drawProbBar").style.width = `${dPct}%`;
+      document.getElementById("awayProbBar").style.width = `${aPct}%`;
+      document.getElementById("xgSummary").textContent = `xG: ${home.code} ${lh.toFixed(2)} vs ${away.code} ${la.toFixed(2)}`;
+
+      const slContainer = document.getElementById("scorelineList");
+      slContainer.innerHTML = scores.slice(0, 5)
+        .map(s => `<span class="score-pill"><strong>${s.label}</strong> (${s.pct}%)</span>`)
+        .join("");
+
+      const edge = (parseFloat(hPct) - marketHome).toFixed(1);
+      const sigEl = document.getElementById("edgeSignalText");
+      if (edge >= 4.0) {
+        sigEl.textContent = `+${edge}% Edge • HIGH CONVICTION ${home.code} YES`;
+        sigEl.style.color = "var(--sol-green)";
+      } else if (edge <= -4.0) {
+        sigEl.textContent = `${edge}% Edge • HIGH CONVICTION ${home.code} NO`;
+        sigEl.style.color = "var(--amber)";
+      } else {
+        sigEl.textContent = `${edge >= 0 ? "+" : ""}${edge}% Delta • FAIR MARKET PROBABILITY`;
+        sigEl.style.color = "var(--cyan)";
+      }
+    }
+
+    let activeSide = "YES";
+    function updateLeverageSim() {
+      const collateral = Math.max(10, parseFloat(document.getElementById("collateralInput").value) || 500);
+      const lev = parseFloat(document.getElementById("leverageSlider").value);
+      const entryPct = parseFloat(document.getElementById("entryProbSlider").value);
+      const exitPct = parseFloat(document.getElementById("exitProbSlider").value);
+
+      document.getElementById("leverageVal").textContent = `${lev.toFixed(1)}×`;
+      document.getElementById("entryProbVal").textContent = `${entryPct}%`;
+      document.getElementById("exitProbVal").textContent = `${exitPct}%`;
+
+      const q0 = activeSide === "YES" ? entryPct / 100 : (100 - entryPct) / 100;
+      const q1 = activeSide === "YES" ? exitPct / 100 : (100 - exitPct) / 100;
+      const notional = collateral * lev;
+      const contracts = notional / q0;
+      const fee = notional * 0.002;
+
+      let liqText = "None (1× Spot)";
+      let bufText = "100% Safe";
+      let liquidated = false;
+
+      if (lev > 1.0) {
+        const dropFrac = (1.0 / lev) - 0.08;
+        const qLiq = Math.max(0, q0 * (1.0 - dropFrac));
+        if (activeSide === "YES") {
+          const liqYes = qLiq * 100;
+          liqText = `${liqYes.toFixed(1)}%`;
+          bufText = `${Math.max(0, entryPct - liqYes).toFixed(1)} pts`;
+          liquidated = exitPct <= liqYes;
+        } else {
+          const liqYes = Math.min(100, 100 - qLiq * 100);
+          liqText = `${liqYes.toFixed(1)}%`;
+          bufText = `${Math.max(0, liqYes - entryPct).toFixed(1)} pts`;
+          liquidated = exitPct >= liqYes;
+        }
+      }
+
+      let netPnl = liquidated ? -collateral : Math.max(-collateral, contracts * (q1 - q0) - fee);
+      const roi = (netPnl / collateral) * 100;
+
+      document.getElementById("simNotional").textContent = `$${notional.toLocaleString(undefined, {maximumFractionDigits: 0})} USDC`;
+      const pnlEl = document.getElementById("simPnl");
+      pnlEl.textContent = `${netPnl >= 0 ? "+" : ""}$${netPnl.toFixed(2)} (${roi >= 0 ? "+" : ""}${roi.toFixed(1)}%)`;
+      pnlEl.style.color = netPnl >= 0 ? "var(--sol-green)" : "var(--danger)";
+      document.getElementById("simLiqPrice").textContent = liqText;
+      document.getElementById("simBuffer").textContent = bufText;
+
+      const banner = document.getElementById("simStatusBanner");
+      if (liquidated) {
+        banner.innerHTML = `<span style="color: var(--danger); font-weight: 700;">Margin Threshold Reached:</span> Exit Market Probability crossed liquidation boundary (${liqText}). Max loss capped at $${collateral.toFixed(0)} USDC collateral.`;
+      } else {
+        banner.innerHTML = `Position active at <strong>${lev.toFixed(1)}×</strong> on <strong>${activeSide}</strong> shares (${contracts.toFixed(1)} contracts, protocol fee $${fee.toFixed(2)} USDC).`;
+      }
+    }
+
+    function updateRewardsCalc() {
+      const weeklyVol = Math.max(0, parseFloat(document.getElementById("weeklyVolInput").value) || 0);
+      const refCount = Math.max(0, parseInt(document.getElementById("referredTradersInput").value, 10) || 0);
+
+      const score = (weeklyVol / 2500) * 1.65 * 1.22;
+      const top10Prob = weeklyVol === 0 ? 0 : Math.min(0.92, 1 - Math.exp(-(10 / 250) * Math.pow(score, 1.25) * 3.2));
+      const bonusEv = top10Prob * 175.0;
+
+      const notional90d = refCount * ((1200 * 2.2) / 7.0) * 90.0;
+      const refUsdc90d = notional90d * 0.0025 * 0.30;
+
+      document.getElementById("lbProbVal").textContent = `${(top10Prob * 100).toFixed(1)}%`;
+      document.getElementById("lbBonusVal").textContent = `+$${bonusEv.toFixed(2)} USDC`;
+      document.getElementById("refVolVal").textContent = `$${(notional90d / 1000).toFixed(1)}K`;
+      document.getElementById("refPayoutVal").textContent = `+$${refUsdc90d.toFixed(2)} USDC`;
+    }
+
+    homeSel.addEventListener("change", updateMatchEngine);
+    awaySel.addEventListener("change", updateMatchEngine);
+    document.getElementById("wormHomeMarket").addEventListener("input", updateMatchEngine);
+
+    document.getElementById("sideYesBtn").addEventListener("click", () => {
+      activeSide = "YES";
+      document.getElementById("sideYesBtn").classList.add("active");
+      document.getElementById("sideNoBtn").classList.remove("active");
+      updateLeverageSim();
+    });
+    document.getElementById("sideNoBtn").addEventListener("click", () => {
+      activeSide = "NO";
+      document.getElementById("sideNoBtn").classList.add("active");
+      document.getElementById("sideYesBtn").classList.remove("active");
+      updateLeverageSim();
+    });
+    document.querySelectorAll(".lev-preset").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".lev-preset").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("leverageSlider").value = btn.dataset.lev;
+        updateLeverageSim();
+      });
+    });
+    ["collateralInput", "leverageSlider", "entryProbSlider", "exitProbSlider"].forEach(id => {
+      document.getElementById(id).addEventListener("input", updateLeverageSim);
+    });
+    ["weeklyVolInput", "referredTradersInput"].forEach(id => {
+      document.getElementById(id).addEventListener("input", updateRewardsCalc);
+    });
+
+    updateMatchEngine();
+    updateLeverageSim();
+    updateRewardsCalc();
+  </script>
+</body>
+</html>
